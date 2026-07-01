@@ -215,4 +215,4 @@ filters, wire compression, and progress/JSON output — has shipped.
 
 ## License
 
-TBD.
+[MIT](LICENSE) © Vsevolod Strukchinsky
