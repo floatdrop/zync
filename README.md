@@ -1,5 +1,7 @@
 # zync
 
+[![CI](https://github.com/floatdrop/zync/actions/workflows/ci.yml/badge.svg)](https://github.com/floatdrop/zync/actions/workflows/ci.yml)
+
 A modern [rsync](https://rsync.samba.org/) alternative, written in [Zig](https://ziglang.org/).
 
 zync synchronises files and directory trees — locally or between hosts over SSH —

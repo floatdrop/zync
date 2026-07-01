@@ -92,9 +92,9 @@ fn runTransfer(
         });
         if (parsed.json) {
             try jsonLine(io, "{{\"mode\":\"local\",\"dirs\":{d},\"symlinks\":{d},\"specials\":{d},\"hardlinks\":{d},\"files\":{d},\"new\":{d},\"delta\":{d},\"whole\":{d},\"skipped\":{d},\"ignored\":{d},\"errors\":{d},\"bytes_written\":{d},\"delta_sent\":{d},\"delta_reused\":{d},\"deleted\":{d}}}", .{
-                stats.dirs,          stats.symlinks,          stats.specials,            stats.hardlinks,
-                stats.files_total,   stats.files_created,     stats.files_delta,         stats.files_whole,
-                stats.files_skipped, stats.entries_ignored,   stats.errors,              stats.bytes_written,
+                stats.dirs,                stats.symlinks,            stats.specials,    stats.hardlinks,
+                stats.files_total,         stats.files_created,       stats.files_delta, stats.files_whole,
+                stats.files_skipped,       stats.entries_ignored,     stats.errors,      stats.bytes_written,
                 stats.delta_literal_bytes, stats.delta_matched_bytes, stats.deleted,
             });
         } else {
@@ -102,11 +102,9 @@ fn runTransfer(
                 "zync: {d} dirs, {d} links, {d} specials, {d} hardlinks, {d} files ({d} new, {d} delta, {d} whole, {d} skipped, {d} ignored, {d} errors)\n" ++
                     "      {d} bytes written; delta sent {d}, reused {d}; {d} deleted\n",
                 .{
-                    stats.dirs, stats.symlinks, stats.specials, stats.hardlinks, stats.files_total,
-                    stats.files_created,   stats.files_delta,   stats.files_whole,
-                    stats.files_skipped,   stats.entries_ignored, stats.errors,
-                    stats.bytes_written,   stats.delta_literal_bytes, stats.delta_matched_bytes,
-                    stats.deleted,
+                    stats.dirs,          stats.symlinks,      stats.specials,            stats.hardlinks,           stats.files_total,
+                    stats.files_created, stats.files_delta,   stats.files_whole,         stats.files_skipped,       stats.entries_ignored,
+                    stats.errors,        stats.bytes_written, stats.delta_literal_bytes, stats.delta_matched_bytes, stats.deleted,
                 },
             );
             try stderr.flush();
@@ -159,17 +157,16 @@ fn runPush(io: Io, gpa: std.mem.Allocator, stderr: *Io.Writer, parsed: zync.cli.
 
     if (parsed.json) {
         try jsonLine(io, "{{\"mode\":\"push\",\"dirs\":{d},\"symlinks\":{d},\"specials\":{d},\"hardlinks\":{d},\"files\":{d},\"sent\":{d},\"skipped\":{d},\"ignored\":{d},\"delta_sent\":{d},\"delta_reused\":{d}}}", .{
-            stats.dirs,          stats.symlinks,      stats.specials,      stats.hardlinks, stats.files_total,
-            stats.files_sent,    stats.files_skipped, stats.entries_ignored, stats.literal_bytes, stats.matched_bytes,
+            stats.dirs,       stats.symlinks,      stats.specials,        stats.hardlinks,     stats.files_total,
+            stats.files_sent, stats.files_skipped, stats.entries_ignored, stats.literal_bytes, stats.matched_bytes,
         });
     } else {
         try stderr.print(
             "zync: pushed {d} dirs, {d} links, {d} specials, {d} hardlinks, {d} files ({d} sent, {d} skipped, {d} ignored)\n" ++
                 "      delta sent {d}, reused {d}\n",
             .{
-                stats.dirs,          stats.symlinks,        stats.specials,      stats.hardlinks, stats.files_total,
-                stats.files_sent,    stats.files_skipped,   stats.entries_ignored,
-                stats.literal_bytes, stats.matched_bytes,
+                stats.dirs,       stats.symlinks,      stats.specials,        stats.hardlinks,     stats.files_total,
+                stats.files_sent, stats.files_skipped, stats.entries_ignored, stats.literal_bytes, stats.matched_bytes,
             },
         );
         try stderr.flush();
