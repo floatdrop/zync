@@ -13,19 +13,30 @@ const Dir = Io.Dir;
 /// within one tree (real hardlinks can't cross filesystems).
 pub const Key = struct { dev: u64, ino: u64 };
 
-/// Combines a stat's inode with the file's device (read via statx). Falls back
-/// to dev 0 (inode-only) if statx is unavailable — fine for a single-fs tree.
+/// Combines a stat's inode with the file's device (read via stat). Falls back
+/// to dev 0 (inode-only) if the stat is unavailable — fine for a single-fs tree.
 pub fn key(dir: Dir, path: []const u8, inode: u64) Key {
-    if (builtin.os.tag != .linux) return .{ .dev = 0, .ino = inode };
-    const linux = std.os.linux;
-    const path_z = std.posix.toPosixPath(path) catch return .{ .dev = 0, .ino = inode };
-    var stx: linux.Statx = undefined;
-    const rc = linux.statx(dir.handle, &path_z, linux.AT.SYMLINK_NOFOLLOW, .{ .TYPE = true }, &stx);
-    const dev: u64 = switch (std.posix.errno(rc)) {
-        .SUCCESS => (@as(u64, stx.dev_major) << 32) | stx.dev_minor,
-        else => 0,
-    };
-    return .{ .dev = dev, .ino = inode };
+    const fallback: Key = .{ .dev = 0, .ino = inode };
+    const path_z = std.posix.toPosixPath(path) catch return fallback;
+    switch (builtin.os.tag) {
+        .linux => {
+            const linux = std.os.linux;
+            var stx: linux.Statx = undefined;
+            const rc = linux.statx(dir.handle, &path_z, linux.AT.SYMLINK_NOFOLLOW, .{ .TYPE = true }, &stx);
+            const dev: u64 = switch (std.posix.errno(rc)) {
+                .SUCCESS => (@as(u64, stx.dev_major) << 32) | stx.dev_minor,
+                else => return fallback,
+            };
+            return .{ .dev = dev, .ino = inode };
+        },
+        .macos => {
+            var st: std.c.Stat = undefined;
+            if (std.c.fstatat(dir.handle, &path_z, &st, std.c.AT.SYMLINK_NOFOLLOW) != 0) return fallback;
+            const dev: u32 = @bitCast(st.dev);
+            return .{ .dev = dev, .ino = st.ino };
+        },
+        else => return fallback,
+    }
 }
 
 /// Best-effort creation of a hardlink `path` → `master` under `dir`. Idempotent:

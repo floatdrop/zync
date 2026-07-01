@@ -39,7 +39,7 @@ one way. zync explores what a from-scratch alternative looks like:
   (`--conns`), for push *and* pull, for concurrent CPU on both ends and multiple
   TCP streams.
 - **Special files** — FIFOs, sockets, and (with privilege) device nodes are
-  replicated.
+  replicated (Linux).
 - **Exclude filters** (`--exclude`) — skip paths by glob; excluded directories
   aren't even walked.
 - **Compression** (`-z`) — deflate the transferred data for slow/metered links.
@@ -58,8 +58,10 @@ one way. zync explores what a from-scratch alternative looks like:
 ## Requirements
 
 - **Zig 0.16.0** (the project targets this exact release).
-- **Linux.** Owner and xattr support use Linux syscalls directly; the core sync
-  and delta transfer are POSIX-oriented and assume an SSH-style remote shell.
+- **Linux or macOS.** The core sync, delta transfer, and owner/xattr
+  preservation work on both. A few extras are Linux-only — see
+  [Limitations](#limitations). zync is POSIX-oriented and assumes an SSH-style
+  remote shell.
 - For remote transfers: `ssh` (or any `--rsh` program) and a `zync` binary on
   the remote host.
 
@@ -184,6 +186,11 @@ The library (`root.zig`) holds all logic and is separate from the thin CLI
 
 zync is young. Known gaps versus rsync:
 
+- **macOS is second-class in a few spots.** Core sync, delta transfer,
+  owner/group (`-o`/`-g`), and xattrs (`-X`) work on both Linux and macOS.
+  Special files (`mknodat`) are Linux-only, and hardlink detection on macOS
+  is inode-only (no cross-device disambiguation), which is fine for a
+  single-filesystem tree.
 - **Hardlinks (`-H`) are single-connection only** — not supported together with
   `--conns > 1` (rejected with an error).
 - **Xattrs cover files and directories, not symlinks** (filesystems rarely

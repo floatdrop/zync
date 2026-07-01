@@ -14,11 +14,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Static musl builds so the binaries run on any Linux without a libc
-        # version dependency.
+        # Linux: static musl builds so the binaries run on any Linux without a
+        # libc version dependency. macOS: Zig cross-compiles + links libSystem
+        # from the Linux runner, so all four targets build in one place.
         target:
           - x86_64-linux-musl
           - aarch64-linux-musl
+          - x86_64-macos
+          - aarch64-macos
     steps:
       - uses: actions/checkout@v4
 
